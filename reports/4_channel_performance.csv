@@ -1,0 +1,4 @@
+channel_name,total_transactions,transaction_share_pct,total_sales_inr,revenue_share_pct,avg_items_per_basket,avg_order_value_inr,return_rate_pct
+In-Store,3075,43.93,28234756.28,42.89,3.31,9182.03,22.63
+Online,2014,28.77,19789091.71,30.06,3.26,9825.77,23.44
+Mobile App,1911,27.3,17812780.46,27.06,3.36,9321.18,24.96

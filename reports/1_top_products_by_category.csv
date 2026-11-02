@@ -1,0 +1,19 @@
+category_name,product_name,total_orders,total_sales_inr,avg_order_value_inr,avg_rating,category_rank
+Beauty & Care,Fragrance,300,1029747.81,3432.49,4.04,1
+Beauty & Care,Skincare Kit,298,590037.44,1979.99,4.0,2
+Beauty & Care,Haircare,261,281194.97,1077.38,4.04,3
+Electronics,Smart TV,326,14906020.67,45723.99,4.02,1
+Electronics,Smartphone,328,12212809.31,37234.17,3.97,2
+Electronics,Headphones,295,1946412.23,6598.01,3.92,3
+Fashion,Footwear,541,7847790.8,14506.08,3.81,1
+Fashion,Ethnic Wear,559,7341483.64,13133.24,3.85,2
+Fashion,Jeans & Trousers,611,4686947.05,7670.94,3.86,3
+Grocery,Dry Fruits,484,2317427.83,4788.07,3.96,1
+Grocery,Staples Combo,482,2012371.84,4175.05,4.03,2
+Grocery,Snacks & Beverages,449,1124967.24,2505.49,3.94,3
+Home & Kitchen,Mixer Grinder,403,2111510.73,5239.48,4.05,1
+Home & Kitchen,Cookware Set,373,1367331.35,3665.77,4.05,2
+Home & Kitchen,Bedding Set,398,1099968.88,2763.74,4.01,3
+Sports & Fitness,Outdoor Gear,299,1963543.2,6567.03,4.03,1
+Sports & Fitness,Fitness Equipment,306,1585621.11,5181.77,3.91,2
+Sports & Fitness,Sports Footwear,287,1411442.35,4917.92,3.95,3

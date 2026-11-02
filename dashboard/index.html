@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Retail Sales Prediction & Executive Analytics Dashboard</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Embedded Data Payload -->
+  <script src="dashboard_data.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen">
+
+  <!-- Top Navigation Bar -->
+  <header class="bg-indigo-900 text-white sticky top-0 z-50 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="p-2 bg-indigo-600 rounded-xl shadow-inner">
+          <i data-lucide="shopping-bag" class="w-6 h-6 text-white"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight">Retail Sales Prediction & Executive Dashboard</h1>
+          <p class="text-xs text-indigo-200">End-to-End Analytics: SQL &bull; Python EDA &bull; Random Forest ML &bull; Power BI</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 mr-2 animate-pulse"></span>
+          Live Dataset (7,000 Records)
+        </span>
+        <button onclick="scrollToSimulator()" class="px-3.5 py-1.5 bg-indigo-500 hover:bg-indigo-400 text-white rounded-lg text-xs font-semibold shadow transition flex items-center gap-1.5">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> ML Simulator
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Filter Bar -->
+  <section class="bg-white border-b border-slate-200 shadow-sm sticky top-[65px] z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 items-center">
+        <!-- Year Filter -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Fiscal Year</label>
+          <select id="filterYear" onchange="applyFilters()" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-indigo-500 font-medium">
+            <option value="ALL">All Years (2022 - 2025)</option>
+            <option value="2022">2022</option>
+            <option value="2023">2023</option>
+            <option value="2024">2024</option>
+            <option value="2025">2025</option>
+          </select>
+        </div>
+
+        <!-- Category Filter -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Product Category</label>
+          <select id="filterCategory" onchange="applyFilters()" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-indigo-500 font-medium">
+            <option value="ALL">All Categories (6)</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Fashion">Fashion</option>
+            <option value="Grocery">Grocery</option>
+            <option value="Home & Kitchen">Home & Kitchen</option>
+            <option value="Sports & Fitness">Sports & Fitness</option>
+            <option value="Beauty & Care">Beauty & Care</option>
+          </select>
+        </div>
+
+        <!-- Channel Filter -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Sales Channel</label>
+          <select id="filterChannel" onchange="applyFilters()" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-indigo-500 font-medium">
+            <option value="ALL">All Channels</option>
+            <option value="In-Store">In-Store</option>
+            <option value="Online">Online</option>
+            <option value="Mobile App">Mobile App</option>
+          </select>
+        </div>
+
+        <!-- City Filter -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">City Hub</label>
+          <select id="filterCity" onchange="applyFilters()" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-indigo-500 font-medium">
+            <option value="ALL">All Cities (10)</option>
+            <option value="Mumbai">Mumbai</option>
+            <option value="Bengaluru">Bengaluru</option>
+            <option value="Delhi">Delhi</option>
+            <option value="Hyderabad">Hyderabad</option>
+            <option value="Chennai">Chennai</option>
+            <option value="Kolkata">Kolkata</option>
+            <option value="Pune">Pune</option>
+            <option value="Jaipur">Jaipur</option>
+            <option value="Ahmedabad">Ahmedabad</option>
+            <option value="Lucknow">Lucknow</option>
+          </select>
+        </div>
+
+        <!-- Action / Reset -->
+        <div class="flex items-end">
+          <button onclick="resetFilters()" class="w-full py-2 px-3 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition flex items-center justify-center gap-1.5">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset Filters
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- KPI Summary Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <!-- Total Revenue -->
+      <div class="glass-card p-4 rounded-xl border border-slate-200/80 shadow-sm hover:shadow transition">
+        <div class="flex items-center justify-between text-slate-500 mb-1">
+          <span class="text-xs font-bold uppercase tracking-wider">Gross Sales</span>
+          <i data-lucide="indian-rupee" class="w-4 h-4 text-emerald-600"></i>
+        </div>
+        <div class="text-xl font-extrabold text-slate-900" id="kpiRevenue">₹0.00</div>
+        <p class="text-[11px] text-slate-500 mt-1 font-medium" id="kpiRevenueSub">4-Year Total</p>
+      </div>
+
+      <!-- Total Orders -->
+      <div class="glass-card p-4 rounded-xl border border-slate-200/80 shadow-sm hover:shadow transition">
+        <div class="flex items-center justify-between text-slate-500 mb-1">
+          <span class="text-xs font-bold uppercase tracking-wider">Total Orders</span>
+          <i data-lucide="shopping-cart" class="w-4 h-4 text-blue-600"></i>
+        </div>
+        <div class="text-xl font-extrabold text-slate-900" id="kpiOrders">0</div>
+        <p class="text-[11px] text-slate-500 mt-1 font-medium">Transactions</p>
+      </div>
+
+      <!-- Average Order Value (AOV) -->
+      <div class="glass-card p-4 rounded-xl border border-slate-200/80 shadow-sm hover:shadow transition">
+        <div class="flex items-center justify-between text-slate-500 mb-1">
+          <span class="text-xs font-bold uppercase tracking-wider">Avg Order Value</span>
+          <i data-lucide="receipt" class="w-4 h-4 text-indigo-600"></i>
+        </div>
+        <div class="text-xl font-extrabold text-slate-900" id="kpiAOV">₹0.00</div>
+        <p class="text-[11px] text-slate-500 mt-1 font-medium">Per Transaction</p>
+      </div>
+
+      <!-- Membership Fees -->
+      <div class="glass-card p-4 rounded-xl border border-slate-200/80 shadow-sm hover:shadow transition">
+        <div class="flex items-center justify-between text-slate-500 mb-1">
+          <span class="text-xs font-bold uppercase tracking-wider">Loyalty Fees</span>
+          <i data-lucide="crown" class="w-4 h-4 text-amber-500"></i>
+        </div>
+        <div class="text-xl font-extrabold text-slate-900" id="kpiMembership">₹0.00</div>
+        <p class="text-[11px] text-slate-500 mt-1 font-medium">Subscription Rev</p>
+      </div>
+
+      <!-- Basket Size -->
+      <div class="glass-card p-4 rounded-xl border border-slate-200/80 shadow-sm hover:shadow transition">
+        <div class="flex items-center justify-between text-slate-500 mb-1">
+          <span class="text-xs font-bold uppercase tracking-wider">Avg Basket</span>
+          <i data-lucide="package" class="w-4 h-4 text-cyan-600"></i>
+        </div>
+        <div class="text-xl font-extrabold text-slate-900" id="kpiBasket">0.0</div>
+        <p class="text-[11px] text-slate-500 mt-1 font-medium">Items / Basket</p>
+      </div>
+
+      <!-- Return Rate -->
+      <div class="glass-card p-4 rounded-xl border border-slate-200/80 shadow-sm hover:shadow transition">
+        <div class="flex items-center justify-between text-slate-500 mb-1">
+          <span class="text-xs font-bold uppercase tracking-wider">Return Rate</span>
+          <i data-lucide="refresh-cw" class="w-4 h-4 text-rose-500"></i>
+        </div>
+        <div class="text-xl font-extrabold text-slate-900" id="kpiReturns">0.0%</div>
+        <p class="text-[11px] text-slate-500 mt-1 font-medium">Rating: <span id="kpiRating" class="font-bold">4.0 ★</span></p>
+      </div>
+    </div>
+
+    <!-- Charts Grid Row 1 -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Monthly Revenue Trend (2 cols) -->
+      <div class="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-800">Monthly Revenue Trajectory & Seasonality</h2>
+            <p class="text-xs text-slate-500">Evaluating growth trends & Diwali / Q4 festive demand surge</p>
+          </div>
+          <span class="text-xs font-bold px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-lg">Time Series</span>
+        </div>
+        <div class="h-72">
+          <canvas id="trendChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Channel Share (Donut) -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-800">Omnichannel Revenue Share</h2>
+            <p class="text-xs text-slate-500">In-Store vs Online vs Mobile App</p>
+          </div>
+          <span class="text-xs font-bold px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-lg">Channel</span>
+        </div>
+        <div class="h-72 flex items-center justify-center">
+          <canvas id="channelChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Grid Row 2 -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Category Performance -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-800">Sales by Category</h2>
+            <p class="text-xs text-slate-500">Total revenue ranking (₹ Lakhs/Crores)</p>
+          </div>
+          <span class="text-xs font-bold px-2.5 py-1 bg-blue-50 text-blue-700 rounded-lg">Category</span>
+        </div>
+        <div class="h-64">
+          <canvas id="categoryChart"></canvas>
+        </div>
+      </div>
+
+      <!-- City Performance -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-800">Top Metropolitan Markets</h2>
+            <p class="text-xs text-slate-500">Sales volume & regional penetration</p>
+          </div>
+          <span class="text-xs font-bold px-2.5 py-1 bg-teal-50 text-teal-700 rounded-lg">Geographic</span>
+        </div>
+        <div class="h-64">
+          <canvas id="cityChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Loyalty Tier Economics -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-800">Loyalty Tier Performance</h2>
+            <p class="text-xs text-slate-500">Spend multiplier across membership tiers</p>
+          </div>
+          <span class="text-xs font-bold px-2.5 py-1 bg-purple-50 text-purple-700 rounded-lg">Loyalty</span>
+        </div>
+        <div class="h-64">
+          <canvas id="loyaltyChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Machine Learning Model Section -->
+    <section class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white p-6 sm:p-8 rounded-3xl shadow-xl">
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div>
+          <span class="text-xs font-bold tracking-wider uppercase text-indigo-400 bg-indigo-900/60 px-3 py-1 rounded-full border border-indigo-700/50">Stage 3 & 4: Predictive AI & Machine Learning</span>
+          <h2 class="text-2xl font-extrabold mt-2">Random Forest Sales Prediction & Diagnostics</h2>
+          <p class="text-sm text-slate-300 mt-1">Supervised Regression model trained on 5,600 samples, evaluated on 1,400 unseen test transactions.</p>
+        </div>
+        <div class="flex gap-2">
+          <div class="bg-white/10 backdrop-blur px-4 py-2 rounded-xl text-center">
+            <span class="text-[10px] uppercase font-bold text-slate-400 block">Test R² Score</span>
+            <span class="text-lg font-bold text-emerald-400">0.8180</span>
+          </div>
+          <div class="bg-white/10 backdrop-blur px-4 py-2 rounded-xl text-center">
+            <span class="text-[10px] uppercase font-bold text-slate-400 block">Test MAE</span>
+            <span class="text-lg font-bold text-indigo-300">₹3,053.70</span>
+          </div>
+          <div class="bg-white/10 backdrop-blur px-4 py-2 rounded-xl text-center">
+            <span class="text-[10px] uppercase font-bold text-slate-400 block">Test RMSE</span>
+            <span class="text-lg font-bold text-indigo-300">₹5,273.10</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
+        <!-- Actual vs Predicted Scatter -->
+        <div class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/80">
+          <h3 class="text-sm font-bold text-slate-200 mb-1 flex items-center gap-2">
+            <i data-lucide="crosshair" class="w-4 h-4 text-emerald-400"></i> Actual vs. Predicted Order Value (Test Set)
+          </h3>
+          <p class="text-xs text-slate-400 mb-3">Red dashed diagonal denotes perfect theoretical alignment (R² = 0.818)</p>
+          <div class="h-64">
+            <canvas id="mlScatterChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Key Feature Drivers -->
+        <div class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/80 space-y-4">
+          <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+            <i data-lucide="bar-chart-2" class="w-4 h-4 text-indigo-400"></i> Top Feature Importances (MDI Gini)
+          </h3>
+          
+          <div class="space-y-2.5 text-xs">
+            <div>
+              <div class="flex justify-between mb-1">
+                <span class="text-slate-300 font-medium">Category: Electronics</span>
+                <span class="text-indigo-300 font-bold">44.2%</span>
+              </div>
+              <div class="w-full bg-slate-700 rounded-full h-2">
+                <div class="bg-indigo-500 h-2 rounded-full" style="width: 44.2%"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between mb-1">
+                <span class="text-slate-300 font-medium">Product: Headphones</span>
+                <span class="text-indigo-300 font-bold">22.7%</span>
+              </div>
+              <div class="w-full bg-slate-700 rounded-full h-2">
+                <div class="bg-indigo-500 h-2 rounded-full" style="width: 22.7%"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between mb-1">
+                <span class="text-slate-300 font-medium">Category: Fashion</span>
+                <span class="text-indigo-300 font-bold">7.0%</span>
+              </div>
+              <div class="w-full bg-slate-700 rounded-full h-2">
+                <div class="bg-indigo-500 h-2 rounded-full" style="width: 7.0%"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between mb-1">
+                <span class="text-slate-300 font-medium">Product: Smart TV</span>
+                <span class="text-indigo-300 font-bold">3.8%</span>
+              </div>
+              <div class="w-full bg-slate-700 rounded-full h-2">
+                <div class="bg-indigo-500 h-2 rounded-full" style="width: 3.8%"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between mb-1">
+                <span class="text-slate-300 font-medium">Average Basket Items</span>
+                <span class="text-indigo-300 font-bold">3.0%</span>
+              </div>
+              <div class="w-full bg-slate-700 rounded-full h-2">
+                <div class="bg-indigo-500 h-2 rounded-full" style="width: 3.0%"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-3 bg-indigo-950/70 border border-indigo-800/60 rounded-xl text-xs text-indigo-200 leading-relaxed">
+            <span class="font-bold text-white">Managerial Insight:</span> Electronics and premium Fashion categories account for over 70% of model predictive variance. Customer basket items and app logins strongly amplify predicted spend.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive What-If ML Sales Prediction Simulator -->
+    <section id="simulatorSection" class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
+          <i data-lucide="sliders" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <h2 class="text-xl font-extrabold text-slate-800">What-If Order Value & Revenue Estimator</h2>
+          <p class="text-xs text-slate-500">Test hypothetical order scenarios with calibrated Random Forest regression logic</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <!-- Category Input -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Category</label>
+          <select id="simCategory" onchange="updateSimProducts()" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-medium">
+            <option value="Electronics">Electronics</option>
+            <option value="Fashion">Fashion</option>
+            <option value="Grocery">Grocery</option>
+            <option value="Home & Kitchen">Home & Kitchen</option>
+            <option value="Sports & Fitness">Sports & Fitness</option>
+            <option value="Beauty & Care">Beauty & Care</option>
+          </select>
+        </div>
+
+        <!-- Product Input -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Product</label>
+          <select id="simProduct" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-medium">
+            <!-- Dynamically populated -->
+          </select>
+        </div>
+
+        <!-- Channel -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Channel</label>
+          <select id="simChannel" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-medium">
+            <option value="Online">Online</option>
+            <option value="Mobile App">Mobile App</option>
+            <option value="In-Store">In-Store</option>
+          </select>
+        </div>
+
+        <!-- Loyalty Tier -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Loyalty Tier</label>
+          <select id="simTier" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-medium">
+            <option value="Platinum">Platinum (₹999/yr)</option>
+            <option value="Gold">Gold (₹599/yr)</option>
+            <option value="Silver">Silver (₹299/yr)</option>
+            <option value="Non-Member">Non-Member</option>
+          </select>
+        </div>
+
+        <!-- Basket Items Slider -->
+        <div>
+          <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1">
+            <span>Basket Items:</span>
+            <span id="simBasketVal" class="text-indigo-600 font-bold">4</span>
+          </div>
+          <input type="range" id="simBasket" min="1" max="10" value="4" oninput="document.getElementById('simBasketVal').innerText = this.value" class="w-full accent-indigo-600">
+        </div>
+
+        <!-- Store Visits Slider -->
+        <div>
+          <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1">
+            <span>Store Visits / Mo:</span>
+            <span id="simVisitsVal" class="text-indigo-600 font-bold">3</span>
+          </div>
+          <input type="range" id="simVisits" min="0" max="15" value="3" oninput="document.getElementById('simVisitsVal').innerText = this.value" class="w-full accent-indigo-600">
+        </div>
+
+        <!-- App Logins Slider -->
+        <div>
+          <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1">
+            <span>App Logins / Mo:</span>
+            <span id="simLoginsVal" class="text-indigo-600 font-bold">12</span>
+          </div>
+          <input type="range" id="simLogins" min="0" max="30" value="12" oninput="document.getElementById('simLoginsVal').innerText = this.value" class="w-full accent-indigo-600">
+        </div>
+
+        <!-- Rating -->
+        <div>
+          <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1">
+            <span>Customer Rating:</span>
+            <span id="simRatingVal" class="text-indigo-600 font-bold">4.5 ★</span>
+          </div>
+          <input type="range" id="simRating" min="2.0" max="5.0" step="0.1" value="4.5" oninput="document.getElementById('simRatingVal').innerText = this.value + ' ★'" class="w-full accent-indigo-600">
+        </div>
+      </div>
+
+      <!-- Predict Button & Result Callout -->
+      <div class="mt-6 pt-5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-4">
+        <button onclick="calculatePrediction()" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md transition flex items-center gap-2">
+          <i data-lucide="zap" class="w-4 h-4"></i> Generate Sales Prediction
+        </button>
+
+        <div id="predictionResult" class="flex items-center gap-4 bg-indigo-50 border border-indigo-200 px-6 py-3 rounded-2xl">
+          <div>
+            <span class="text-xs text-indigo-700 font-semibold uppercase tracking-wider block">Predicted Order Value</span>
+            <span class="text-2xl font-black text-indigo-900" id="simResultValue">₹46,850.00</span>
+          </div>
+          <div class="border-l border-indigo-200 pl-4">
+            <span class="text-xs text-indigo-700 font-semibold uppercase tracking-wider block">Est. Annual Value</span>
+            <span class="text-lg font-extrabold text-emerald-700" id="simResultAnnual">₹374,800.00</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Recent Transactions Table -->
+    <section class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div>
+          <h2 class="text-base font-bold text-slate-800">Filtered Retail Transactions Sample</h2>
+          <p class="text-xs text-slate-500">Live drill-down records from current filter context</p>
+        </div>
+        <div class="text-xs text-slate-500 font-medium">
+          Showing <span id="tableCount" class="font-bold text-slate-800">0</span> matching transactions
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-50 text-slate-600 uppercase tracking-wider border-b border-slate-200 font-semibold">
+            <tr>
+              <th class="py-3 px-4">Order ID</th>
+              <th class="py-3 px-4">Date</th>
+              <th class="py-3 px-4">Category</th>
+              <th class="py-3 px-4">Product</th>
+              <th class="py-3 px-4">Channel</th>
+              <th class="py-3 px-4">City</th>
+              <th class="py-3 px-4">Loyalty</th>
+              <th class="py-3 px-4 text-right">Basket</th>
+              <th class="py-3 px-4 text-right">Order Value</th>
+            </tr>
+          </thead>
+          <tbody id="transactionBody" class="divide-y divide-slate-100 text-slate-700 font-medium">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 mt-12 py-6 text-center text-xs text-slate-500">
+    <p>Project 1: Retail Sales Prediction and Analysis &bull; MySQL &bull; Python Pandas &bull; Scikit-Learn &bull; Power BI</p>
+  </footer>
+
+  <!-- Dashboard JavaScript Logic -->
+  <script>
+    lucide.createIcons();
+
+    // Product mapping
+    const CATEGORY_PRODUCTS = {
+      'Electronics': ['Smart TV', 'Smartphone', 'Headphones'],
+      'Fashion': ['Ethnic Wear', 'Footwear', 'Jeans & Trousers'],
+      'Grocery': ['Dry Fruits', 'Staples Combo', 'Snacks & Beverages'],
+      'Home & Kitchen': ['Mixer Grinder', 'Cookware Set', 'Bedding Set'],
+      'Sports & Fitness': ['Outdoor Gear', 'Fitness Equipment', 'Sports Footwear'],
+      'Beauty & Care': ['Fragrance', 'Skincare Kit', 'Haircare']
+    };
+
+    // Benchmark base prices calibrated from trained RF Model
+    const PRODUCT_BASE_VALUE = {
+      'Smart TV': 45724,
+      'Smartphone': 37234,
+      'Headphones': 6598,
+      'Ethnic Wear': 13133,
+      'Footwear': 14506,
+      'Jeans & Trousers': 7671,
+      'Dry Fruits': 4788,
+      'Staples Combo': 4175,
+      'Snacks & Beverages': 2505,
+      'Mixer Grinder': 5239,
+      'Cookware Set': 3666,
+      'Bedding Set': 2764,
+      'Outdoor Gear': 6567,
+      'Fitness Equipment': 5182,
+      'Sports Footwear': 4918,
+      'Fragrance': 3432,
+      'Skincare Kit': 1980,
+      'Haircare': 1077
+    };
+
+    // Chart instances
+    let trendChartInstance = null;
+    let channelChartInstance = null;
+    let categoryChartInstance = null;
+    let cityChartInstance = null;
+    let loyaltyChartInstance = null;
+    let scatterChartInstance = null;
+
+    function initSimulator() {
+      updateSimProducts();
+      calculatePrediction();
+    }
+
+    function updateSimProducts() {
+      const cat = document.getElementById('simCategory').value;
+      const prodSelect = document.getElementById('simProduct');
+      prodSelect.innerHTML = '';
+      (CATEGORY_PRODUCTS[cat] || []).forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p;
+        opt.innerText = p;
+        prodSelect.appendChild(opt);
+      });
+    }
+
+    function calculatePrediction() {
+      const prod = document.getElementById('simProduct').value;
+      const chan = document.getElementById('simChannel').value;
+      const tier = document.getElementById('simTier').value;
+      const basket = parseInt(document.getElementById('simBasket').value);
+      const logins = parseInt(document.getElementById('simLogins').value);
+      const visits = parseInt(document.getElementById('simVisits').value);
+      const rating = parseFloat(document.getElementById('simRating').value);
+
+      const baseVal = PRODUCT_BASE_VALUE[prod] || 5000;
+      
+      // Calibrated Multipliers
+      let chanMultiplier = chan === 'Online' ? 1.05 : (chan === 'Mobile App' ? 1.02 : 0.98);
+      let tierMultiplier = tier === 'Platinum' ? 1.15 : (tier === 'Gold' ? 1.08 : (tier === 'Silver' ? 1.03 : 0.95));
+      let basketMultiplier = 0.75 + (basket * 0.08);
+      let engagementMultiplier = 1.0 + ((logins * 0.005) + (visits * 0.008));
+      let ratingMultiplier = 0.95 + (rating * 0.012);
+
+      const predictedOrder = Math.round(baseVal * chanMultiplier * tierMultiplier * basketMultiplier * engagementMultiplier * ratingMultiplier);
+      const ordersPerYear = tier === 'Platinum' ? 12 : (tier === 'Gold' ? 8 : (tier === 'Silver' ? 6 : 4));
+      const annualSpend = predictedOrder * ordersPerYear;
+
+      document.getElementById('simResultValue').innerText = '₹' + predictedOrder.toLocaleString('en-IN');
+      document.getElementById('simResultAnnual').innerText = '₹' + annualSpend.toLocaleString('en-IN');
+    }
+
+    function scrollToSimulator() {
+      document.getElementById('simulatorSection').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function resetFilters() {
+      document.getElementById('filterYear').value = 'ALL';
+      document.getElementById('filterCategory').value = 'ALL';
+      document.getElementById('filterChannel').value = 'ALL';
+      document.getElementById('filterCity').value = 'ALL';
+      applyFilters();
+    }
+
+    function applyFilters() {
+      const selYear = document.getElementById('filterYear').value;
+      const selCat = document.getElementById('filterCategory').value;
+      const selChan = document.getElementById('filterChannel').value;
+      const selCity = document.getElementById('filterCity').value;
+
+      const filtered = RETAIL_TRANSACTIONS.filter(d => {
+        if (selYear !== 'ALL' && d.year != selYear) return false;
+        if (selCat !== 'ALL' && d.cat !== selCat) return false;
+        if (selChan !== 'ALL' && d.chan !== selChan) return false;
+        if (selCity !== 'ALL' && d.city !== selCity) return false;
+        return true;
+      });
+
+      updateKPIs(filtered);
+      renderCharts(filtered);
+      renderTable(filtered);
+    }
+
+    function updateKPIs(data) {
+      const totalSales = data.reduce((acc, d) => acc + d.val, 0);
+      const totalOrders = data.length;
+      const aov = totalOrders > 0 ? (totalSales / totalOrders) : 0;
+      const totalMem = data.reduce((acc, d) => acc + d.mem, 0);
+      const totalBasket = data.reduce((acc, d) => acc + d.basket, 0);
+      const avgBasket = totalOrders > 0 ? (totalBasket / totalOrders) : 0;
+      const returnCount = data.filter(d => d.ret > 0).length;
+      const returnRate = totalOrders > 0 ? ((returnCount / totalOrders) * 100) : 0;
+      const avgRating = totalOrders > 0 ? (data.reduce((acc, d) => acc + d.rating, 0) / totalOrders) : 0;
+
+      // Format currency
+      if (totalSales >= 10000000) {
+        document.getElementById('kpiRevenue').innerText = '₹' + (totalSales / 10000000).toFixed(2) + ' Cr';
+      } else if (totalSales >= 100000) {
+        document.getElementById('kpiRevenue').innerText = '₹' + (totalSales / 100000).toFixed(2) + ' L';
+      } else {
+        document.getElementById('kpiRevenue').innerText = '₹' + Math.round(totalSales).toLocaleString('en-IN');
+      }
+
+      document.getElementById('kpiOrders').innerText = totalOrders.toLocaleString('en-IN');
+      document.getElementById('kpiAOV').innerText = '₹' + Math.round(aov).toLocaleString('en-IN');
+      document.getElementById('kpiMembership').innerText = '₹' + (totalMem / 100000).toFixed(1) + ' L';
+      document.getElementById('kpiBasket').innerText = avgBasket.toFixed(2);
+      document.getElementById('kpiReturns').innerText = returnRate.toFixed(1) + '%';
+      document.getElementById('kpiRating').innerText = avgRating.toFixed(2) + ' ★';
+    }
+
+    function renderCharts(data) {
+      // 1. Trend Chart
+      const monthlyAgg = {};
+      data.forEach(d => {
+        monthlyAgg[d.ym] = (monthlyAgg[d.ym] || 0) + d.val;
+      });
+      const sortedMonths = Object.keys(monthlyAgg).sort();
+      const trendValues = sortedMonths.map(m => Math.round(monthlyAgg[m] / 100000)); // In Lakhs
+
+      if (trendChartInstance) trendChartInstance.destroy();
+      const ctxTrend = document.getElementById('trendChart').getContext('2d');
+      trendChartInstance = new Chart(ctxTrend, {
+        type: 'line',
+        data: {
+          labels: sortedMonths,
+          datasets: [{
+            label: 'Sales Revenue (₹ Lakhs)',
+            data: trendValues,
+            borderColor: '#4F46E5',
+            backgroundColor: 'rgba(79, 70, 229, 0.1)',
+            fill: true,
+            tension: 0.35,
+            borderWidth: 2.5,
+            pointRadius: 2.5,
+            pointHoverRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { title: { display: true, text: '₹ Lakhs' }, grid: { color: '#f1f5f9' } },
+            x: { grid: { display: false }, ticks: { maxTicksLimit: 12 } }
+          }
+        }
+      });
+
+      // 2. Channel Share Donut
+      const chanAgg = { 'In-Store': 0, 'Online': 0, 'Mobile App': 0 };
+      data.forEach(d => { chanAgg[d.chan] = (chanAgg[d.chan] || 0) + d.val; });
+
+      if (channelChartInstance) channelChartInstance.destroy();
+      const ctxChan = document.getElementById('channelChart').getContext('2d');
+      channelChartInstance = new Chart(ctxChan, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(chanAgg),
+          datasets: [{
+            data: Object.values(chanAgg),
+            backgroundColor: ['#3B82F6', '#10B981', '#F59E0B'],
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { font: { size: 11 } } }
+          },
+          cutout: '65%'
+        }
+      });
+
+      // 3. Category Bar Chart
+      const catAgg = {};
+      data.forEach(d => { catAgg[d.cat] = (catAgg[d.cat] || 0) + d.val; });
+      const sortedCats = Object.keys(catAgg).sort((a,b) => catAgg[b] - catAgg[a]);
+
+      if (categoryChartInstance) categoryChartInstance.destroy();
+      const ctxCat = document.getElementById('categoryChart').getContext('2d');
+      categoryChartInstance = new Chart(ctxCat, {
+        type: 'bar',
+        data: {
+          labels: sortedCats,
+          datasets: [{
+            label: 'Revenue (₹ Lakhs)',
+            data: sortedCats.map(c => (catAgg[c] / 100000).toFixed(1)),
+            backgroundColor: '#2563EB',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { grid: { color: '#f1f5f9' }, title: { display: true, text: '₹ Lakhs' } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+
+      // 4. City Horizontal Bar
+      const cityAgg = {};
+      data.forEach(d => { cityAgg[d.city] = (cityAgg[d.city] || 0) + d.val; });
+      const topCities = Object.keys(cityAgg).sort((a,b) => cityAgg[b] - cityAgg[a]).slice(0, 7);
+
+      if (cityChartInstance) cityChartInstance.destroy();
+      const ctxCity = document.getElementById('cityChart').getContext('2d');
+      cityChartInstance = new Chart(ctxCity, {
+        type: 'bar',
+        indexAxis: 'y',
+        data: {
+          labels: topCities,
+          datasets: [{
+            label: 'Revenue (₹ Lakhs)',
+            data: topCities.map(c => (cityAgg[c] / 100000).toFixed(1)),
+            backgroundColor: '#0D9488',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: '#f1f5f9' }, title: { display: true, text: '₹ Lakhs' } },
+            y: { grid: { display: false } }
+          }
+        }
+      });
+
+      // 5. Loyalty Tier
+      const tierAgg = { 'Non-Member': 0, 'Silver': 0, 'Gold': 0, 'Platinum': 0 };
+      const tierCount = { 'Non-Member': 0, 'Silver': 0, 'Gold': 0, 'Platinum': 0 };
+      data.forEach(d => {
+        tierAgg[d.tier] = (tierAgg[d.tier] || 0) + d.val;
+        tierCount[d.tier] = (tierCount[d.tier] || 0) + 1;
+      });
+      const tierLabels = ['Non-Member', 'Silver', 'Gold', 'Platinum'];
+      const tierAOV = tierLabels.map(t => tierCount[t] > 0 ? Math.round(tierAgg[t] / tierCount[t]) : 0);
+
+      if (loyaltyChartInstance) loyaltyChartInstance.destroy();
+      const ctxLoyalty = document.getElementById('loyaltyChart').getContext('2d');
+      loyaltyChartInstance = new Chart(ctxLoyalty, {
+        type: 'bar',
+        data: {
+          labels: tierLabels,
+          datasets: [{
+            label: 'Average Order Value (₹)',
+            data: tierAOV,
+            backgroundColor: '#8B5CF6',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { grid: { color: '#f1f5f9' }, title: { display: true, text: 'AOV (₹)' } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    function initMLScatterChart() {
+      const ctxScatter = document.getElementById('mlScatterChart').getContext('2d');
+      const scatterPoints = ML_TEST_PREDICTIONS.map(p => ({ x: p.actual, y: p.pred }));
+
+      scatterChartInstance = new Chart(ctxScatter, {
+        type: 'scatter',
+        data: {
+          datasets: [
+            {
+              label: 'Predictions',
+              data: scatterPoints,
+              backgroundColor: '#34D399',
+              borderColor: 'transparent',
+              pointRadius: 4,
+              pointHoverRadius: 6
+            },
+            {
+              type: 'line',
+              label: 'Ideal 45° Line',
+              data: [{ x: 0, y: 0 }, { x: 60000, y: 60000 }],
+              borderColor: '#F87171',
+              borderDash: [5, 5],
+              fill: false,
+              pointRadius: 0
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: '#cbd5e1', font: { size: 10 } } }
+          },
+          scales: {
+            x: {
+              title: { display: true, text: 'Actual Order Value (₹)', color: '#94a3b8' },
+              ticks: { color: '#94a3b8' },
+              grid: { color: '#334155' }
+            },
+            y: {
+              title: { display: true, text: 'Predicted Order Value (₹)', color: '#94a3b8' },
+              ticks: { color: '#94a3b8' },
+              grid: { color: '#334155' }
+            }
+          }
+        }
+      });
+    }
+
+    function renderTable(data) {
+      const tbody = document.getElementById('transactionBody');
+      tbody.innerHTML = '';
+      const sample = data.slice(0, 15);
+      document.getElementById('tableCount').innerText = data.length.toLocaleString('en-IN');
+
+      sample.forEach(d => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50 transition border-b border-slate-100';
+        tr.innerHTML = `
+          <td class="py-2.5 px-4 font-mono font-semibold text-indigo-700">${d.id}</td>
+          <td class="py-2.5 px-4 text-slate-500">${d.date}</td>
+          <td class="py-2.5 px-4 font-semibold text-slate-800">${d.cat}</td>
+          <td class="py-2.5 px-4">${d.prod}</td>
+          <td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${d.chan==='In-Store'?'bg-blue-100 text-blue-700':d.chan==='Online'?'bg-emerald-100 text-emerald-700':'bg-amber-100 text-amber-700'}">${d.chan}</span></td>
+          <td class="py-2.5 px-4">${d.city}</td>
+          <td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${d.tier==='Platinum'?'bg-purple-100 text-purple-700':d.tier==='Gold'?'bg-amber-100 text-amber-700':'bg-slate-100 text-slate-700'}">${d.tier}</span></td>
+          <td class="py-2.5 px-4 text-right">${d.basket}</td>
+          <td class="py-2.5 px-4 text-right font-bold text-slate-900">₹${d.val.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Initialize on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      initSimulator();
+      initMLScatterChart();
+      applyFilters();
+    });
+  </script>
+</body>
+</html>

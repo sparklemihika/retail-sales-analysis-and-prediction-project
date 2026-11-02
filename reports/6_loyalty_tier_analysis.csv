@@ -1,0 +1,5 @@
+tier_name,annual_fee_inr,total_members,gross_order_value_inr,total_membership_fee_inr,aov_per_tier,avg_orders_per_year,avg_est_annual_spend_inr
+Non-Member,0.0,2929,27628880.72,0.0,9432.87,9.1,74984.11
+Silver,299.0,1972,18644725.71,589628.0,9454.73,8.9,72388.86
+Gold,599.0,1405,13260899.28,841595.0,9438.36,9.0,71760.69
+Platinum,999.0,694,6302122.74,693306.0,9080.87,8.9,71101.39
