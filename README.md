@@ -158,6 +158,8 @@ python src/train_predict.py
 *Outputs evaluation metrics, saves `models/retail_sales_rf_model.joblib`, and creates `data/test_predictions.csv`.*
 
 ### Step 4: Open the Interactive Executive Dashboard
+Live dashboard: https://sparklemihika.github.io/retail-sales-analysis-and-prediction-project/
+
 Simply open the file in your browser:
 ```
 retail_sales_project/dashboard/index.html
